@@ -65,3 +65,16 @@ class InventoryCount:
     
     def set_status(self, new_status):
         self.status = new_status
+
+    # def toDBCollection(self):
+    #     return{
+    #         'inventory_id': self.inventory_id,
+    #         'name': self.name,
+    #         'inventory_location': self.inventory_location,
+    #         'created_by': self.created_by,
+    #         'date_created': self.date_created,
+    #         'list_of_events': self.list_of_events,
+    #         'counted_by': self.counted_by,
+    #         'items_counted': self.items_counted,
+    #         'status': self.status
+    #         }
