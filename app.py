@@ -22,21 +22,6 @@ def index():
 
 # ####### To Test the endpoints, please uncomment #########
 # ####### I put the endpoints here because I don't know how to import the InventoriesController in app.py #########
-
-# #The endpoint to retrive an inventory by inventory_id
-# @app.route("/inventory/get/<inventory_id>", methods=['GET'])
-# def getInventoryByID(inventory_id):
-#     try:
-#         doc_toFind = {"inventory_id": inventory_id}
-#         inventory = inventory_count.find_one(doc_toFind)
-#         if inventory:
-#             print(inventory)
-#             inventory['_id'] = str(inventory['_id'])
-#             return jsonify(inventory), 200
-#         else:
-#             return jsonify({"error": "An inventory NOT FOUND!"}), 404
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
     
 # #The endpoint to retrive an inventory by _id : ObjectId('645c5a80f601147ce550948a')
 # #I used _id because in MongoDB inventory_id has a space "A UUID", and it causes error!

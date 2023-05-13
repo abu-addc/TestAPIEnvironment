@@ -31,6 +31,7 @@ def getInventoryByID(inventory_id):
             return jsonify({"error": "An inventory NOT FOUND!"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
 # #The endpoint to retrive an inventory by _id (Just for testing because of 'inventory_id': A UUID doesn't work)
 # @app.route("/inventory/get/<id>", methods=['GET'])
