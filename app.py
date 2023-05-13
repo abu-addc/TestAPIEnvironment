@@ -1,6 +1,7 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from dotenv.main import load_dotenv
+from bson import ObjectId
 import os
 
 load_dotenv()
@@ -37,12 +38,12 @@ def index():
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
     
-# #The endpoint to retrive an inventory by status 
-# #(I used status because in MongoDB inventory_id has a space "A UUID", and it causes error!)
-# @app.route("/inventory/get/<status>", methods=['GET'])
-# def getInventoryByID(status):
+# #The endpoint to retrive an inventory by _id : ObjectId('645c5a80f601147ce550948a')
+# #I used _id because in MongoDB inventory_id has a space "A UUID", and it causes error!
+# @app.route("/inventory/get/<id>", methods=['GET'])
+# def getInventoryByID(id):
 #     try:
-#         doc_toFind = {"status": status}
+#         doc_toFind = {"_id": ObjectId(id)}
 #         inventory = inventory_count.find_one(doc_toFind)
 #         if inventory:
 #             print(inventory)
@@ -54,7 +55,7 @@ def index():
 #         return jsonify({"error": str(e)}), 500
 
 # #The endpoint to retrive an item from the inventory by SKU
-# @app.route("/inventory/getItem/<sku>", methods=['GET'])
+# @app.route("/inventories/getItem/<sku>", methods=['GET'])
 # def getItembySKU(sku):
 #     try:
 #         item = inventory_count.find_one({"items_counted.sku": sku}, {"items_counted.$": 1})
@@ -66,6 +67,48 @@ def index():
 #             return jsonify({"error": "An item NOT FOUND!"}), 404
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
+
+# #The endpoint to update a quantity counted from the inventory with the specified SKU
+# #In this case I used ObjectID instead of inventory to avoid the misstake of 'A UUID' in MongoDB We can change it back later
+# @app.route("/inventories/update/<id>", methods=['PUT'])
+# def updateQuatityCountedBaseOnSKU(id):
+#     try:
+#         sku = request.json["sku"]
+#         new_quantity = request.json["quantity_counted"]
+
+#         result = inventory_count.update_one(
+#             {"_id": ObjectId(id), "items_counted.sku": sku}, 
+#             {"$set": {"items_counted.$.quantity_counted": new_quantity}}
+#             )
+#         if result.modified_count == 1:
+#             return "Quantity updated successfully"
+#         else:
+#             return "Failed to update quantity"
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+    
+# #The endpoint to update a quantity counted from the inventory with the specified user_id
+# #I tried to use the same endpoint with def updateQuatityCountedBaseOnSKU(id), but it didn't work
+# #Therefore, I created a new app.route
+# #In this case I use ObjectID instead of inventory to avoid the misstake of 'A UUID' in MongoDB
+# #and username instead of user_id: 'A UUID' in MongoDB (We can change it back later)
+# @app.route("/inventories/update/specifieduserid/<id>", methods=['PUT'])
+# def updateQuatityCountedBaseOnUserID(id):
+#     try:
+#         username = request.json["username"]
+#         new_quantity = request.json["quantity_counted"]
+
+#         result = inventory_count.update_one(
+#             {"_id": ObjectId(id), "counted_by.username": username}, 
+#             {"$set": {"counted_by.$.quantity_counted": new_quantity}}
+#             )
+#         if result.modified_count == 1:
+#             return "Quantity updated successfully"
+#         else:
+#             return "Failed to update quantity"
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':

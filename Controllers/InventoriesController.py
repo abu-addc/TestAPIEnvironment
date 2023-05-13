@@ -1,6 +1,7 @@
-from flask import Flask, jsonify 
+from flask import Flask, jsonify, request 
 from pymongo import MongoClient
 from dotenv.main import load_dotenv
+from bson import ObjectId
 import os
 
 load_dotenv()
@@ -13,6 +14,8 @@ db = client['sample_inventory']
 inventory_count = db['Inventory_Count']
 
 app = Flask(__name__)
+
+# ####### To Test the endpoints, please go to app.py and read the brief instruction there #########
 
 #The endpoint to retrive an inventory by inventory ID
 @app.route("/inventory/get/<inventory_id>", methods=['GET'])
@@ -29,11 +32,12 @@ def getInventoryByID(inventory_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# #The endpoint to retrive an inventory by status (Just for example)
-# @app.route("/inventory/get/<status>", methods=['GET'])
-# def getInventoryByID(status):
+# #The endpoint to retrive an inventory by status (Just for testing because of 'A UUID' doesn't work)
+# #I used _id instead of inventory_id
+# @app.route("/inventory/get/<id>", methods=['GET'])
+# def getInventoryByID(id):
 #     try:
-#         doc_toFind = {"status": status}
+#         doc_toFind = {"_id": ObjectId(id)}
 #         inventory = inventory_count.find_one(doc_toFind)
 #         if inventory:
 #             print(inventory)
@@ -45,7 +49,7 @@ def getInventoryByID(inventory_id):
 #         return jsonify({"error": str(e)}), 500
     
 #The endpoint to retrive an item from the inventory by SKU
-@app.route("/inventory/getItem/<sku>", methods=['GET'])
+@app.route("/inventories/getItem/<sku>", methods=['GET'])
 def getItembySKU(sku):
     try:
         item = inventory_count.find_one({"items_counted.sku": sku}, {"items_counted.$": 1})
@@ -57,90 +61,48 @@ def getItembySKU(sku):
             return jsonify({"error": "An item NOT FOUND!"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# #The endpoint to update a quantity counted from the inventory with the specified SKU
+# #In this case I use ObjectID instead of inventory to avoid the misstake of 'A UUID' in MongoDB (We can change it back later)
+# #I also import request and from bson import ObjectId on the top of the file
+@app.route("/inventories/update/<id>", methods=['PUT'])
+def updateQuatityCountedBaseOnSKU(id):
+    try:
+        sku = request.json["sku"]
+        new_quantity = request.json["quantity_counted"]
 
+        result = inventory_count.update_one(
+            {"_id": ObjectId(id), "items_counted.sku": sku}, 
+            {"$set": {"items_counted.$.quantity_counted": new_quantity}}
+            )
+        if result.modified_count == 1:
+            return "Quantity updated successfully"
+        else:
+            return "Failed to update quantity"
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# doc_toFind = {"inventory_id": "AUUID"}
+# #The endpoint to update a quantity counted from the inventory with the specified user_id
+# #I tried to use the same endpoint with def updateQuatityCountedBaseOnSKU(id), but it didn't work
+# #In this case I use ObjectID instead of inventory to avoid the misstake of 'A UUID' in MongoDB 
+# #and username instead of user_id: 'A UUID' in MongoDB (We can change it back later)
+# #I also import request and from bson import ObjectId on the top of the file
+@app.route("/inventories/update/specifieduserid/<id>", methods=['PUT'])
+def updateQuatityCountedBaseOnUserID(id):
+    try:
+        username = request.json["username"]
+        new_quantity = request.json["quantity_counted"]
 
-# result = inventory_count.find_one(doc_toFind)
-
-# pprint.pprint(result)
-
-# @app.route("/inventory", methods=['POST','GET'])
-# def data():
-#     if request.method == 'POST':
-#         body = request.json
-#         inventory_id: body['inventory_id']
-#         name: body['name']
-#         status: body['status']
-
-#         db['Inventory_Count']._insert_one({
-#             "inventory_id": inventory_id,
-#             "name": name,
-#             "status": status
-#         })
-
-#         return  jsonify({
-#             'status_posted': 'Data is posted',
-#             'inventory_id': inventory_id,
-#             'name': name,
-#             'status': status
-#         })
-#     if request.method == 'GET':
-#         allData = db['Inventory_Count'].find()
-#         respond = []
-#         for data in allData:
-#             inventory_id: data['inventory_id']
-#             name: data['name']
-#         # inventory_location: data['inventory_location']
-#         # created_by: data['created_by']
-#         # date_created: data['date_created']
-#         # list_of_events: data['list_of_events']
-#         # counted_by: data['counted_by']
-#         # items_counted: data['items_counted']
-#             status: data['status']
-            
-#             dataDict = {
-#                 'inventory_id': inventory_id,
-#                 'name': name,
-#             # 'inventory_location': inventory_location,
-#             # 'created_by': created_by,
-#             # 'date_created': date_created,
-#             # 'list_of_events': list_of_events,
-#             # 'counted_by': counted_by,
-#             # 'items_counted': items_counted,
-#                 'status': status
-#             }
-#             respond.append(dataDict)
-#             return jsonify(respond)
-
-# @app.route('/inventory/get', methods=['GET'])
-# def getInventoryByID():
-#     allData = db['Inventory_Count'].find()
-#     respond = []
-#     for data in allData:
-#         inventory_id: data['inventory_id']
-#         name: data['name']
-#         inventory_location: data['inventory_location']
-#         created_by: data['created_by']
-#         date_created: data['date_created']
-#         list_of_events: data['list_of_events']
-#         counted_by: data['counted_by']
-#         items_counted: data['items_counted']
-#         status: data['status']
-
-#         dataDict = {
-#             'inventory_id': inventory_id,
-#             'name': name,
-#             'inventory_location': inventory_location,
-#             'created_by': created_by,
-#             'date_created': date_created,
-#             'list_of_events': list_of_events,
-#             'counted_by': counted_by,
-#             'items_counted': items_counted,
-#             'status': status
-#         }
-#         respond.append(dataDict)
-#     return jsonify(respond)
+        result = inventory_count.update_one(
+            {"_id": ObjectId(id), "counted_by.username": username}, 
+            {"$set": {"counted_by.$.quantity_counted": new_quantity}}
+            )
+        if result.modified_count == 1:
+            return "Quantity updated successfully"
+        else:
+            return "Failed to update quantity"
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 
 
