@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from pymongo import MongoClient
 from dotenv.main import load_dotenv
 import os
-#from ..Models.InventoryCount import InventoryCount
 
 load_dotenv()
 MONGO_URI = os.environ['MONGO_URI']
@@ -16,25 +15,49 @@ inventory_count = db['Inventory_Count']
 app = Flask(__name__)
 
 #The endpoint to retrive an inventory by inventory ID
-# @app.route("/inventory/get/<string:id>", methods=['GET'])
-# def getInventoryByID(id):
+@app.route("/inventory/get/<inventory_id>", methods=['GET'])
+def getInventoryByID(inventory_id):
+    try:
+        doc_toFind = {"inventory_id": inventory_id}
+        inventory = inventory_count.find_one(doc_toFind)
+        if inventory:
+            print(inventory)
+            inventory['_id'] = str(inventory['_id'])
+            return jsonify(inventory), 200
+        else:
+            return jsonify({"error": "An inventory NOT FOUND!"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# #The endpoint to retrive an inventory by status (Just for example)
+# @app.route("/inventory/get/<status>", methods=['GET'])
+# def getInventoryByID(status):
 #     try:
-#         doc_toFind = {"inventory_id": id}
+#         doc_toFind = {"status": status}
 #         inventory = inventory_count.find_one(doc_toFind)
 #         if inventory:
+#             print(inventory)
+#             inventory['_id'] = str(inventory['_id'])
 #             return jsonify(inventory), 200
 #         else:
 #             return jsonify({"error": "An inventory NOT FOUND!"}), 404
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
     
-    
+#The endpoint to retrive an item from the inventory by SKU
+@app.route("/inventory/getItem/<sku>", methods=['GET'])
+def getItembySKU(sku):
+    try:
+        item = inventory_count.find_one({"items_counted.sku": sku}, {"items_counted.$": 1})
+        if item:
+            print(item)
+            item['_id'] = str(item['_id'])
+            return jsonify(item['items_counted'][0]), 200
+        else:
+            return jsonify({"error": "An item NOT FOUND!"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/inventory/get/', method=['GET'])
-def getInventoryByID():
-    result = inventory_count.find()
-    respond = jsonify(result)
-    return respond
 
 # doc_toFind = {"inventory_id": "AUUID"}
 
@@ -120,6 +143,4 @@ def getInventoryByID():
 #     return jsonify(respond)
     
 
-if __name__ == '__main__':
-    app.run()
 
