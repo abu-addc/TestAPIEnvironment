@@ -9,6 +9,7 @@ app = Flask(__name__)
 def inventories_route(user_id):
     return get_inventories_by_user(user_id)
 
+
 if __name__ == '__main__':
     app.run()
 
