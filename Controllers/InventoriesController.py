@@ -39,14 +39,27 @@ def update_inventory_status():
      # Get the inventory ID from the query parameters
     inventory_id = request.args.get('inventory_id')
 
-    # Get the new status from the request body
-    new_status = request.json.get('status')
+    
+    # Check if 'status' key exists in the request body
+    if 'status' in request.json:
+        # Get the new status from the request body
+        new_status = request.json.get('status')
+        # Update the status field of the inventory document
+        result = collection.update_one(
+            {"inventory_id": inventory_id},
+            {"$set": {"status": new_status}})
 
-    # Update the status field of the inventory document
-    result = collection.update_one(
-        {"inventory_id": inventory_id},
-        {"$set": {"status": new_status}}
-    )
+    if 'due_date' in request.json:
+        # Get the new status from the request body
+        new_date = request.json.get('due_date')
+        # Update the status field of the inventory document
+        result = collection.update_one(
+            {"inventory_id": inventory_id},
+            {"$set": {"due_date": new_date}})
+
+
+    
+    
 
     if result.matched_count == 1:
         return jsonify({'message': 'Inventory status updated successfully'})
